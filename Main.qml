@@ -100,7 +100,7 @@ Item {
     var next = shelfService.cloneDoc()
     var i = Store.indexOfPath(next.folders, path)
     if (i === -1) return
-    next.folders[i].label = String(label || "").slice(0, 60)
+    next.folders[i].label = Store.clean(label, 60)
     shelfService.commit(next)
   }
 

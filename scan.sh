@@ -16,6 +16,19 @@
 #   THUMB   <path>                           an image to draw in the preview
 #   PARTIAL 1                                the walk hit the timeout
 #   ERR     <reason>
+#
+# Everything `find` emits is NUL-terminated and read by awk with RS="\0",
+# and every name is stripped of control characters before it is printed.
+# A file name may contain a newline, and with newline-delimited records that
+# is an injection: a file called $'x\nSTAT\tdrwxrwxrwx|root|root|0' forges a
+# record, and the shelf shows somebody else's numbers — a wrong size, a wrong
+# owner, a folder claimed to be world-writable when it is not. Nothing here
+# reaches a shell, so this was never code execution; it was the card lying
+# about the folder, on the say-so of whoever could drop a file into it.
+#
+# THUMB is the one record that cannot be sanitised, because the path has to
+# stay usable as a path. Those are dropped instead: a picture whose name
+# carries a newline goes unshown, which costs one thumbnail.
 
 set -u
 
@@ -26,21 +39,36 @@ thumbs=${4:-4}
 recents=${5:-6}
 
 [ -n "$path" ] || { printf 'ERR\tno-path\n'; exit 0; }
-[ -d "$path" ] || { printf 'ERR\tmissing\n'; exit 0; }
+if [ ! -d "$path" ]; then
+  if [ -e "$path" ]; then printf 'ERR\tnotdir\n'; else printf 'ERR\tmissing\n'; fi
+  exit 0
+fi
 
 stat_line=$(stat -c '%A|%U|%G|%Y' "$path" 2>/dev/null) || stat_line=""
 [ -n "$stat_line" ] && printf 'STAT\t%s\n' "$stat_line"
 
 [ -r "$path" ] && [ -x "$path" ] || { printf 'ERR\tunreadable\n'; exit 0; }
 
-# Everything directly inside, counted by type.
-find "$path" -mindepth 1 -maxdepth 1 -printf '%y\n' 2>/dev/null |
+# -H follows the starting point and nothing below it: a favourite that is a
+# symlink to a real folder is the folder it points at, while a tree full of
+# links back to / is still just a tree full of links.
+
+# Everything directly inside, counted by type. Names are not read here, so
+# there is nothing to forge.
+find -H "$path" -mindepth 1 -maxdepth 1 -printf '%y\n' 2>/dev/null |
   awk '{ if ($1 == "d") d++; else f++ } END { printf "TOP\t%d\t%d\n", f + 0, d + 0 }'
 
 # The most recently changed entries, newest first.
 if [ "$recents" -gt 0 ]; then
-  find "$path" -mindepth 1 -maxdepth 1 -printf '%T@\t%y\t%s\t%f\n' 2>/dev/null |
-    sort -rn | head -n "$recents" | awk '{ print "RECENT\t" $0 }'
+  find -H "$path" -mindepth 1 -maxdepth 1 -printf '%T@\t%y\t%s\t%f\0' 2>/dev/null |
+    sort -z -rn | head -z -n "$recents" |
+    awk 'BEGIN { RS = "\0"; FS = "\t" }
+         NF >= 4 {
+           name = $4
+           for (i = 5; i <= NF; i++) name = name "\t" $i
+           gsub(/[[:cntrl:]]/, " ", name)
+           printf "RECENT\t%s\t%s\t%s\t%s\n", $1, $2, $3, name
+         }'
 fi
 
 # The walk. `%p` is only read to classify the name and to pick thumbnails —
@@ -48,12 +76,15 @@ fi
 # couple of dozen lines. A timeout leaves the totals partial rather than
 # absent, and says so, which is more use than a blank card.
 read -r -d '' AWK_CLASSIFY <<'AWKPROG'
-$1 == "PARTIAL" && NF == 1 { partial = 1; next }
-{
+BEGIN { RS = "\0"; FS = "\t" }
+$0 == "PARTIAL" && NF == 1 { partial = 1; next }
+NF >= 3 {
+  path = $3
+  for (i = 4; i <= NF; i++) path = path "\t" $i
   if ($1 == "d") { dirs++; next }
   files++
   bytes += $2
-  name = $3
+  name = path
   sub(/.*\//, "", name)
   cat = "other"
   if (name ~ /\./) {
@@ -68,7 +99,12 @@ $1 == "PARTIAL" && NF == 1 { partial = 1; next }
   }
   count[cat]++
   size[cat] += $2
-  if (cat == "image" && shown < want) { shown++; print "THUMB\t" $3 }
+  # A path with a control character in it cannot be written on a line and
+  # still be opened from one, so it is simply not offered as a thumbnail.
+  if (cat == "image" && shown < want && path !~ /[[:cntrl:]]/) {
+    shown++
+    printf "THUMB\t%s\n", path
+  }
 }
 END {
   if (partial) print "PARTIAL\t1"
@@ -79,16 +115,16 @@ AWKPROG
 
 if [ "$deep" = "1" ]; then
   {
-    timeout "$timeout_s" find "$path" -mindepth 1 \( -type f -o -type d \) \
-      -printf '%y\t%s\t%p\n' 2>/dev/null
-    # A killed `find` leaves its last line unterminated, so the marker opens
-    # with a newline of its own or it lands glued to a truncated record.
-    [ "$?" = "124" ] && printf '\nPARTIAL\n'
-  } | awk -F'\t' -v want="$thumbs" "$AWK_CLASSIFY"
+    timeout "$timeout_s" find -H "$path" -mindepth 1 \( -type f -o -type d \) \
+      -printf '%y\t%s\t%p\0' 2>/dev/null
+    # A killed `find` leaves its last record unterminated, so the marker opens
+    # with a NUL of its own or it lands glued to that truncated record.
+    [ "$?" = "124" ] && printf '\0PARTIAL'
+  } | awk -v want="$thumbs" "$AWK_CLASSIFY"
 else
-  find "$path" -mindepth 1 -maxdepth 1 \( -type f -o -type d \) \
-    -printf '%y\t%s\t%p\n' 2>/dev/null |
-    awk -F'\t' -v want="$thumbs" "$AWK_CLASSIFY"
+  find -H "$path" -mindepth 1 -maxdepth 1 \( -type f -o -type d \) \
+    -printf '%y\t%s\t%p\0' 2>/dev/null |
+    awk -v want="$thumbs" "$AWK_CLASSIFY"
 fi
 
 exit 0

@@ -9,7 +9,7 @@ for each release.
 
 ## [Unreleased]
 
-## [0.1.0] — 2026-09-08
+## [1.0.0] — 2026-09-08
 
 First release.
 
@@ -29,3 +29,16 @@ First release.
   manager, or from the XDG folders the shelf offers on first run.
 - Grid and list layouts, reordering by dragging, and a filter for shelves that
   have grown.
+
+### Security
+
+- The scanner reads `find` output as NUL-terminated records and strips control
+  characters from every name before printing one. A file name may contain a
+  newline, and with newline-delimited records that is an injection: a file
+  called `$'x\nSTAT\tdrwxrwxrwx|root|root|0'` forged a record, and the preview
+  showed somebody else's numbers — a wrong size, a wrong owner, a folder
+  claimed to be world-writable when it was not. Nothing reached a shell, so
+  this was never code execution; it was the card lying about the folder, on
+  the say-so of whoever could drop a file into it.
+- Labels read from the shelf file are stripped of control characters, so a
+  hand-edited or pasted name cannot change the height of a tile.

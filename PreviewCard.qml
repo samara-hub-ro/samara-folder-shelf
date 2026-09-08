@@ -88,6 +88,7 @@ Item {
       text: {
         if (!card.scan) return ""
         if (card.scan.error === "missing") return "This folder is not there any more."
+        if (card.scan.error === "notdir") return "This is a file, not a folder."
         if (card.scan.error === "unreadable") return "No permission to read this folder."
         return "Could not read this folder."
       }

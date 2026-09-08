@@ -14,6 +14,16 @@ function defaultWindow() {
   return { x: 120, y: 120, width: 460, height: 340, screen: "", visible: true, raised: false }
 }
 
+// Anything that came out of the file and is going to be drawn. The file is
+// meant to be hand-edited and is also written by us, so a control character
+// in a label is either a typo or a paste accident — but a newline in a label
+// still changes the height of a tile, and a name is not a place that needs
+// them.
+function clean(value, limit) {
+  if (typeof value !== "string") return ""
+  return value.replace(/[\u0000-\u001f\u007f]/g, " ").slice(0, limit)
+}
+
 function normalizeFolder(entry) {
   if (!entry) return null
   var path = ""
@@ -24,9 +34,9 @@ function normalizeFolder(entry) {
   var o = (typeof entry === "object" && entry) ? entry : {}
   return {
     path: path,
-    label: typeof o.label === "string" ? o.label : "",
-    icon: typeof o.icon === "string" ? o.icon : "",
-    accent: typeof o.accent === "string" ? o.accent : ""
+    label: clean(o.label, 60),
+    icon: clean(o.icon, 8),
+    accent: clean(o.accent, 32)
   }
 }
 

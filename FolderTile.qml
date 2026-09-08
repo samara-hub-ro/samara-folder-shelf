@@ -32,7 +32,11 @@ Item {
   signal dragFinished()
 
   readonly property bool hovered: mouse.containsMouse
-  readonly property bool missing: tile.scan && !tile.scan.ok && tile.scan.error === "missing"
+  // "Missing" covers everything that means there is no folder at the end of
+  // this path any more — it was deleted, or it was never a folder in the
+  // first place. Both draw the same way; only the preview spells out which.
+  readonly property bool missing: tile.scan && !tile.scan.ok
+    && (tile.scan.error === "missing" || tile.scan.error === "notdir")
   readonly property string label: tile.folder
     ? (tile.folder.label && tile.folder.label.length > 0
        ? tile.folder.label
@@ -153,7 +157,11 @@ Item {
       anchors.verticalCenter: parent.verticalCenter
       text: {
         if (!tile.scan) return ""
-        if (!tile.scan.ok) return tile.scan.error === "missing" ? "gone" : "no access"
+        if (!tile.scan.ok) {
+          if (tile.scan.error === "missing") return "gone"
+          if (tile.scan.error === "notdir") return "not a folder"
+          return "no access"
+        }
         return tile.itemsLine + " · " + Format.bytes(tile.scan.bytes) + (tile.scan.partial ? "+" : "")
       }
       color: Qt.rgba(Color.foreground.r, Color.foreground.g, Color.foreground.b, tile.missing ? 0.7 : 0.45)
