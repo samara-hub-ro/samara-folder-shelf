@@ -12,20 +12,20 @@ Row {
   property color tone: Color.tooltip.text
   property bool dimmed: false
 
-  spacing: Style.space(6)
+  spacing: Style.space(8)
 
   Text {
     text: fact.label
     color: Qt.rgba(fact.tone.r, fact.tone.g, fact.tone.b, 0.45)
     font.family: Style.font.family
-    font.pixelSize: Style.font.caption
+    font.pixelSize: Style.font.bodySmall
   }
 
   Text {
     text: fact.value
     color: Qt.rgba(fact.tone.r, fact.tone.g, fact.tone.b, fact.dimmed ? 0.62 : 0.95)
     font.family: Style.font.family
-    font.pixelSize: Style.font.caption
+    font.pixelSize: Style.font.bodySmall
     font.bold: !fact.dimmed
   }
 }

@@ -33,8 +33,8 @@ Item {
     return n
   }
 
-  implicitWidth: Style.space(340)
-  implicitHeight: body.implicitHeight + Style.space(28)
+  implicitWidth: Style.space(400)
+  implicitHeight: body.implicitHeight + Style.space(40)
 
   GlassPanel {
     anchors.fill: parent
@@ -49,13 +49,13 @@ Item {
   Column {
     id: body
     anchors.fill: parent
-    anchors.margins: Style.space(14)
-    spacing: Style.space(10)
+    anchors.margins: Style.space(20)
+    spacing: Style.space(16)
 
     // ------------------------------------------------------------- heading
     Column {
       width: parent.width
-      spacing: Style.space(2)
+      spacing: Style.space(4)
 
       Text {
         width: parent.width
@@ -97,7 +97,7 @@ Item {
     Row {
       visible: card.thumbs.length > 0
       width: parent.width
-      spacing: Style.space(6)
+      spacing: Style.space(8)
 
       Repeater {
         model: card.thumbs
@@ -105,9 +105,9 @@ Item {
         Item {
           required property string modelData
           required property int index
-          readonly property real cell: (body.width - Style.space(6) * (card.thumbs.length - 1)) / Math.max(1, card.thumbs.length)
+          readonly property real cell: (body.width - Style.space(8) * (card.thumbs.length - 1)) / Math.max(1, card.thumbs.length)
           width: cell
-          height: cell * 0.72
+          height: cell * 0.74
 
           Rectangle {
             anchors.fill: parent
@@ -138,7 +138,7 @@ Item {
     Column {
       visible: card.recents.length > 0
       width: parent.width
-      spacing: Style.space(3)
+      spacing: Style.space(5)
 
       Repeater {
         model: card.recents
@@ -146,7 +146,7 @@ Item {
         Item {
           required property var modelData
           width: body.width
-          height: Style.space(15)
+          height: Style.space(20)
 
           Text {
             id: entryName
@@ -159,7 +159,7 @@ Item {
               ? Qt.rgba(Color.accent.r, Color.accent.g, Color.accent.b, 0.9)
               : Qt.rgba(Color.tooltip.text.r, Color.tooltip.text.g, Color.tooltip.text.b, 0.82)
             font.family: Style.font.family
-            font.pixelSize: Style.font.caption
+            font.pixelSize: Style.font.bodySmall
             elide: Text.ElideMiddle
           }
 
@@ -181,11 +181,11 @@ Item {
     Column {
       visible: card.ready && card.totalCategoryCount > 0
       width: parent.width
-      spacing: Style.space(6)
+      spacing: Style.space(10)
 
       Row {
         width: parent.width
-        height: Style.space(6)
+        height: Style.space(8)
         spacing: 1
 
         Repeater {
@@ -210,7 +210,7 @@ Item {
 
       Flow {
         width: parent.width
-        spacing: Style.space(10)
+        spacing: Style.space(14)
 
         Repeater {
           model: card.scan ? card.scan.categories : []
@@ -220,8 +220,8 @@ Item {
             spacing: Style.space(4)
 
             Rectangle {
-              width: Style.space(6)
-              height: Style.space(6)
+              width: Style.space(7)
+              height: Style.space(7)
               radius: width / 2
               anchors.verticalCenter: parent.verticalCenter
               color: {
@@ -249,8 +249,8 @@ Item {
       visible: card.ready
       width: parent.width
       columns: 2
-      columnSpacing: Style.space(12)
-      rowSpacing: Style.space(4)
+      columnSpacing: Style.space(20)
+      rowSpacing: Style.space(9)
 
       Fact {
         label: "Here"

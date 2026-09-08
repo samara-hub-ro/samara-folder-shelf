@@ -409,7 +409,13 @@ Scope {
       anchors.bottomMargin: Style.space(12)
       clip: true
 
-      readonly property int gap: Style.space(8)
+      // Columns sit closer than rows do. A grid of folders reads as rows of
+      // things, so the vertical rhythm is what separates one shelf from the
+      // next; matching the two gaps makes it read as an undifferentiated
+      // field instead. In list layout there is only one column and the rows
+      // are already tall, so they want the tighter gap back.
+      readonly property int gap: Style.space(10)
+      readonly property int rowGap: host.listMode ? Style.space(6) : Style.space(20)
       readonly property int cellW: host.listMode
         ? width
         : Math.max(Style.space(52), host.tileSize + Style.space(16))
@@ -421,7 +427,7 @@ Scope {
         : Math.max(1, Math.floor((width + gap) / (cellW + gap)))
 
       readonly property int rows: Math.ceil(host.visibleFolders.length / Math.max(1, columns))
-      readonly property int contentHeight: rows * cellH + Math.max(0, rows - 1) * gap
+      readonly property int contentHeight: rows * cellH + Math.max(0, rows - 1) * rowGap
 
       // Where a tile ends up once the one being dragged is taken out of the
       // order and put back somewhere else. Everything between the two indices
@@ -439,11 +445,11 @@ Scope {
       // Slots, drags and hit tests all live in the flickable's content item,
       // so none of them has to know how far the shelf is scrolled.
       function slotX(slot) { return (slot % columns) * (cellW + gap) }
-      function slotY(slot) { return Math.floor(slot / columns) * (cellH + gap) }
+      function slotY(slot) { return Math.floor(slot / columns) * (cellH + rowGap) }
 
       function slotAt(x, y) {
         var col = Math.max(0, Math.min(columns - 1, Math.floor(x / (cellW + gap))))
-        var row = Math.max(0, Math.floor(y / (cellH + gap)))
+        var row = Math.max(0, Math.floor(y / (cellH + rowGap)))
         return Math.max(0, Math.min(host.visibleFolders.length - 1, row * columns + col))
       }
 
