@@ -2,6 +2,11 @@ import QtQuick
 import Quickshell
 import qs.Commons
 import qs.Ui
+// Qualified as well as plain: this file is itself called BarWidget.qml, and a
+// composite type from the plugin's own directory outranks an imported one, so
+// the bare name would resolve to this file rather than to the shell's base
+// component. Everything else in qs.Ui is unambiguous and stays unqualified.
+import qs.Ui as Ui
 
 // Folder Shelf — the bar half.
 //
@@ -11,7 +16,7 @@ import qs.Ui
 // entry, so they arrive here and are pushed across. With no widget on the bar
 // the shelf runs on the manifest defaults, which is documented rather than
 // accidental — but it is also why the widget is worth having.
-BarWidget {
+Ui.BarWidget {
   id: root
 
   moduleName: "samara-hub-ro.folder-shelf"
