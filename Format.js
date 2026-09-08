@@ -45,6 +45,15 @@ function count(n) {
 
 // Relative for anything inside a year, absolute past that: "3 days ago" stops
 // being useful long before "2024-11-02" starts being ambiguous.
+// Counts read as prose in the preview, so they carry their noun and the
+// noun agrees. Abbreviated counts ("12k files") are always plural, which is
+// the one case where the short form and the grammar cannot disagree.
+function plural(n, noun) {
+  var v = Number(n)
+  if (!isFinite(v) || v < 0) return "—"
+  return count(v) + " " + noun + (v === 1 ? "" : "s")
+}
+
 function since(epochSeconds) {
   var t = Number(epochSeconds)
   if (!isFinite(t) || t <= 0) return "—"
