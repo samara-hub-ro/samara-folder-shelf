@@ -30,6 +30,15 @@ Item {
   implicitWidth: Style.space(230)
   implicitHeight: column.implicitHeight + Style.space(16)
 
+  // As in the picker: the surface underneath dismisses, so the menu has to
+  // keep the clicks that land between its rows.
+  MouseArea {
+    anchors.fill: parent
+    acceptedButtons: Qt.LeftButton | Qt.RightButton
+    hoverEnabled: true
+    onClicked: function (event) { event.accepted = true }
+  }
+
   GlassPanel {
     anchors.fill: parent
     radius: Style.space(12)

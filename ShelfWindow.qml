@@ -823,9 +823,5 @@ Scope {
       }
       onCancelled: host.pickerOpen = false
     }
-
-    onVisibleChanged: {
-      if (visible && host.pickerOpen) Qt.callLater(function () { folderPicker.open(host.home) })
-    }
   }
 }

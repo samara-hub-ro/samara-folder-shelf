@@ -74,6 +74,21 @@ Item {
   implicitWidth: Style.space(420)
   implicitHeight: Style.space(380)
 
+  // Everything under the picker is a dismissal surface, so the picker has to
+  // stop the clicks that land on its own background — otherwise clicking a
+  // gap between two controls closes the dialog you are using.
+  MouseArea {
+    anchors.fill: parent
+    acceptedButtons: Qt.LeftButton | Qt.RightButton
+    hoverEnabled: true
+    onClicked: function (event) { event.accepted = true }
+  }
+
+  // Loading is driven by the picker's own visibility rather than by the
+  // surface it sits on: the surface can already be up for a menu when the
+  // picker opens, and then its visibility never changes to announce it.
+  onVisibleChanged: if (visible) Qt.callLater(function () { picker.open(picker.startPath || picker.home) })
+
   GlassPanel {
     anchors.fill: parent
     radius: Style.space(14)
