@@ -29,6 +29,11 @@ First release.
   manager, or from the XDG folders the shelf offers on first run.
 - Grid and list layouts, reordering by dragging, and a filter for shelves that
   have grown.
+- **Show on every monitor**, off by default: one shelf per screen, sharing the
+  same folders and position, with hover previews and menus local to the screen
+  being pointed at. Workspaces never needed an option — a layer-shell surface
+  belongs to an output rather than a workspace, so the shelf was always on all
+  of them.
 
 ### Security
 

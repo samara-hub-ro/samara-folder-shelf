@@ -32,7 +32,12 @@ Scope {
   //
   // The shelf remembers which monitor it was left on. If that monitor is not
   // here any more the first one takes it, rather than the shelf quietly not
-  // existing on a machine that has been undocked.
+  // existing on a machine that has been undocked. With "Show on every
+  // monitor" the question does not arise and every screen draws one.
+  //
+  // Workspaces never come into it: a layer-shell surface belongs to an output,
+  // not to a workspace, which is the same reason the bar does not disappear
+  // when you switch. The shelf is on all of them already.
   readonly property bool storedScreenPresent: {
     var name = host.winDoc ? host.winDoc.screen : ""
     if (!name) return false
@@ -43,6 +48,7 @@ Scope {
 
   readonly property bool ownsShelf: {
     if (!host.targetScreen || !host.winDoc) return false
+    if (host.onEveryMonitor) return true
     if (host.storedScreenPresent) return host.targetScreen.name === host.winDoc.screen
     var list = Quickshell.screens
     return list.length > 0 && list[0] === host.targetScreen
@@ -58,6 +64,7 @@ Scope {
   readonly property int thumbnailCount: Math.max(0, Math.min(8, Number(host.setting("thumbnailCount", 4)) || 0))
   readonly property int recentCount: Math.max(0, Math.min(12, Number(host.setting("recentCount", 6)) || 0))
   readonly property bool locked: host.setting("lockPosition", false) === true
+  readonly property bool onEveryMonitor: host.setting("allMonitors", false) === true
 
   // -------------------------------------------------------------- geometry
   //
@@ -95,7 +102,12 @@ Scope {
 
   function persistGeometry() {
     if (!host.service || !host.targetScreen) return
-    host.service.saveGeometry(host.posX, host.posY, host.shelfW, host.shelfH, host.targetScreen.name)
+    // While the shelf is on every monitor there is no "the monitor it is on",
+    // so a drag on one screen must not quietly claim ownership for it. The
+    // recorded monitor is left alone, and turning the option off puts the
+    // shelf back on the screen it was on before it was turned on.
+    host.service.saveGeometry(host.posX, host.posY, host.shelfW, host.shelfH,
+                              host.onEveryMonitor ? "" : host.targetScreen.name)
   }
 
   Connections {

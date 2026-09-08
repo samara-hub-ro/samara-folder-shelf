@@ -122,6 +122,9 @@ Item {
     next.window.y = Math.round(y)
     next.window.width = Math.round(w)
     next.window.height = Math.round(h)
+    // An empty name means "leave it where it was recorded" rather than "no
+    // monitor": the shelf on every screen has no one monitor to claim, and
+    // clearing this would lose the choice the user made before turning that on.
     if (screenName) next.window.screen = String(screenName)
     shelfService.commit(next)
   }

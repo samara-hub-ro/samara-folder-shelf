@@ -38,6 +38,16 @@ Add folders with the **+** button, or drop them straight onto the shelf from
 your file manager. On its first run the shelf offers the XDG folders you
 actually have — Downloads, Documents, Pictures and the rest.
 
+### Where it appears
+
+The shelf is on **every workspace**, always — it is a layer-shell surface, which
+belongs to a monitor rather than to a workspace, the same reason the bar does
+not vanish when you switch. By default it is on **one** monitor: the one you
+left it on, or the first one if that monitor has been unplugged. Turn on **Show
+on every monitor** and each screen gets its own, at the same place, sharing the
+same folders — hovers, previews and menus stay local to the screen you are
+pointing at.
+
 The position, the size, the monitor and the folders are kept in
 `~/.config/omarchy/folder-shelf.json`, which is plain JSON you can edit, copy to
 another machine, or keep in a dotfiles repo.
@@ -117,6 +127,7 @@ in `~/.config/omarchy/shell.json`.
 | Recent entries | 6 | How many recently changed entries it lists |
 | Read the whole tree | on | Walk the folder recursively for size and type totals. Off reads only the top level, which is instant on very large folders |
 | Scan timeout | 12 s | How long a recursive walk may run before the preview settles for what it read |
+| Show on every monitor | off | One shelf per screen instead of one on the screen it was left on |
 | Lock in place | off | Stops the shelf being moved or resized by dragging |
 | Fill the shelf on first use | on | Offer your XDG folders the first time it opens empty |
 | Bar icon | drawn mark | Any glyph your bar font carries |

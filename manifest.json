@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "author": "samara-hub-ro",
   "license": "MIT",
-  "description": "A glass shelf on your desktop holding the folders you actually use: hover one to see inside it — thumbnails, recent files, size, composition and permissions — and open it in your file manager with a double click.",
+  "description": "A glass shelf on your desktop holding the folders you actually use: hover one to see inside it \u2014 thumbnails, recent files, size, composition and permissions \u2014 and open it in your file manager with a double click.",
   "kinds": [
     "service",
     "bar-widget"
@@ -33,6 +33,7 @@
       "deepStats": true,
       "scanTimeout": 12,
       "raiseWhileHovered": false,
+      "allMonitors": false,
       "lockPosition": false,
       "seedOnFirstRun": true,
       "icon": ""
@@ -43,7 +44,10 @@
         "type": "enum",
         "label": "Layout",
         "description": "Grid puts the folders in tiles with the name underneath. List gives each folder a row with its headline numbers already on it.",
-        "options": ["Grid", "List"],
+        "options": [
+          "Grid",
+          "List"
+        ],
         "defaultValue": "Grid"
       },
       {
@@ -128,6 +132,13 @@
         "defaultValue": 12
       },
       {
+        "key": "allMonitors",
+        "type": "boolean",
+        "label": "Show on every monitor",
+        "description": "Put the same shelf on all your screens instead of only the one it was left on. Each screen keeps its own hover previews and menus, and moving or resizing the shelf on any of them moves it on all of them.",
+        "defaultValue": false
+      },
+      {
         "key": "lockPosition",
         "type": "boolean",
         "label": "Lock in place",
@@ -138,7 +149,7 @@
         "key": "seedOnFirstRun",
         "type": "boolean",
         "label": "Fill the shelf on first use",
-        "description": "The first time the shelf opens empty, add the XDG folders you actually have — Downloads, Documents, Pictures and the rest.",
+        "description": "The first time the shelf opens empty, add the XDG folders you actually have \u2014 Downloads, Documents, Pictures and the rest.",
         "defaultValue": true
       },
       {
