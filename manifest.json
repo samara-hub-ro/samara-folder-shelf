@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "id": "samara-hub-ro.folder-shelf",
+  "name": "Folder Shelf",
+  "version": "0.1.0",
+  "author": "samara-hub-ro",
+  "license": "MIT",
+  "description": "A glass shelf on your desktop holding the folders you actually use: hover one to see inside it — thumbnails, recent files, size, composition and permissions — and open it in your file manager with a double click.",
+  "kinds": [
+    "service",
+    "bar-widget"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "service": "Main.qml",
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Folder Shelf",
+    "description": "Show or hide the desktop shelf, and lift it above your windows while you use it.",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {
+      "layout": "Grid",
+      "tileSize": 64,
+      "backgroundOpacity": 80,
+      "showLabels": true,
+      "showPreview": true,
+      "previewDelay": 320,
+      "thumbnailCount": 4,
+      "recentCount": 6,
+      "deepStats": true,
+      "scanTimeout": 12,
+      "raiseWhileHovered": false,
+      "lockPosition": false,
+      "seedOnFirstRun": true,
+      "icon": ""
+    },
+    "schema": [
+      {
+        "key": "layout",
+        "type": "enum",
+        "label": "Layout",
+        "description": "Grid puts the folders in tiles with the name underneath. List gives each folder a row with its headline numbers already on it.",
+        "options": ["Grid", "List"],
+        "defaultValue": "Grid"
+      },
+      {
+        "key": "tileSize",
+        "type": "integer",
+        "label": "Tile size (px)",
+        "description": "Size of a folder tile in grid layout. The shelf fits as many columns as its width allows.",
+        "min": 40,
+        "max": 160,
+        "step": 4,
+        "defaultValue": 64
+      },
+      {
+        "key": "showLabels",
+        "type": "boolean",
+        "label": "Show folder names",
+        "description": "Print the name under each tile. Turn it off for an icon-only shelf; the name still appears in the preview.",
+        "defaultValue": true
+      },
+      {
+        "key": "backgroundOpacity",
+        "type": "integer",
+        "label": "Background opacity (%)",
+        "description": "Opacity of the shelf's glass. Pair it with the Hyprland blur layerrule from the README for a frosted surface rather than a flat wash.",
+        "min": 10,
+        "max": 100,
+        "step": 2,
+        "defaultValue": 80
+      },
+      {
+        "key": "showPreview",
+        "type": "boolean",
+        "label": "Preview on hover",
+        "description": "Open the preview card when the pointer rests on a folder. With this off, the shelf is a plain launcher.",
+        "defaultValue": true
+      },
+      {
+        "key": "previewDelay",
+        "type": "integer",
+        "label": "Preview delay (ms)",
+        "description": "How long the pointer has to sit on a folder before its preview opens. Raise it if previews appear while you are passing through.",
+        "min": 0,
+        "max": 2000,
+        "step": 20,
+        "defaultValue": 320
+      },
+      {
+        "key": "thumbnailCount",
+        "type": "integer",
+        "label": "Thumbnails",
+        "description": "How many image thumbnails the preview shows for a folder that has pictures in it.",
+        "min": 0,
+        "max": 8,
+        "step": 1,
+        "defaultValue": 4
+      },
+      {
+        "key": "recentCount",
+        "type": "integer",
+        "label": "Recent entries",
+        "description": "How many of the folder's most recently changed entries the preview lists.",
+        "min": 0,
+        "max": 12,
+        "step": 1,
+        "defaultValue": 6
+      },
+      {
+        "key": "deepStats",
+        "type": "boolean",
+        "label": "Read the whole tree",
+        "description": "Walk the folder recursively for total size, total file count and the type breakdown. Turn it off to read only the top level, which is instant on very large folders.",
+        "defaultValue": true
+      },
+      {
+        "key": "scanTimeout",
+        "type": "integer",
+        "label": "Scan timeout (s)",
+        "description": "How long a recursive walk may run before the preview settles for what it managed to read. Results are cached, so a slow folder is slow once.",
+        "min": 2,
+        "max": 60,
+        "step": 1,
+        "defaultValue": 12
+      },
+      {
+        "key": "lockPosition",
+        "type": "boolean",
+        "label": "Lock in place",
+        "description": "Stop the shelf being moved or resized by dragging, once you have it where you want it.",
+        "defaultValue": false
+      },
+      {
+        "key": "seedOnFirstRun",
+        "type": "boolean",
+        "label": "Fill the shelf on first use",
+        "description": "The first time the shelf opens empty, add the XDG folders you actually have — Downloads, Documents, Pictures and the rest.",
+        "defaultValue": true
+      },
+      {
+        "key": "icon",
+        "type": "string",
+        "label": "Bar icon",
+        "description": "Glyph shown in the bar. Leave it empty for the drawn shelf mark, or put any character your bar font carries here.",
+        "defaultValue": ""
+      },
+      {
+        "key": "configPath",
+        "type": "path",
+        "label": "Shelf file",
+        "description": "Where the shelf's folders and its position are stored. Defaults to ~/.config/omarchy/folder-shelf.json.",
+        "defaultValue": ""
+      }
+    ]
+  }
+}
