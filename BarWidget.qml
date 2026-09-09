@@ -26,7 +26,11 @@ Ui.BarWidget {
 
   readonly property string barIcon: String(setting("icon", ""))
 
+  // The shared link first, the documented lookup second. `bar.shell` is a
+  // shell API scoped to whoever owns the bar, so under a third-party bar this
+  // lookup runs in that bar's name rather than ours and comes back null.
   readonly property var service: {
+    if (ShelfLink.service) return ShelfLink.service
     var sh = root.bar && root.bar.shell ? root.bar.shell : null
     if (!sh || typeof sh.serviceFor !== "function") return null
     return sh.serviceFor("samara-hub-ro.folder-shelf")
@@ -40,7 +44,7 @@ Ui.BarWidget {
   // own bar entry, and re-pushed on every change so editing a setting in the
   // shell's own UI moves the shelf without a restart.
   function pushSettings() {
-    if (root.service) root.service.settings = root.settings || ({})
+    if (root.service) root.service.pushedSettings = root.settings || ({})
   }
 
   onSettingsChanged: root.pushSettings()

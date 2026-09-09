@@ -46,7 +46,7 @@ Item {
   readonly property string firstThumb: (tile.scan && tile.scan.thumbs.length > 0) ? tile.scan.thumbs[0] : ""
 
   readonly property string itemsLine: tile.scan
-    ? Format.count(tile.scan.topFiles + tile.scan.topDirs) + " items"
+    ? Format.plural(tile.scan.topFiles + tile.scan.topDirs, "item")
     : ""
 
   readonly property color labelColor: tile.missing

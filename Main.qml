@@ -22,12 +22,48 @@ Item {
 
   readonly property string home: Quickshell.env("HOME")
 
-  // Pushed in by the bar widget, which is where the shell puts a plugin's
-  // settings. With no widget on the bar the shelf still runs — on the
-  // manifest defaults, which is the documented state rather than an accident.
-  property var settings: ({})
+  // Settings arrive by two routes, because one of them is not reliable.
+  //
+  // The documented route is the bar widget: the shell keeps a plugin's
+  // settings on its bar entry and injects them into the widget, which passes
+  // them here. That works under the stock bar. Under a third-party bar it can
+  // fail silently — an older bar fork throws part-way through injecting
+  // properties, and the settings assignment that comes after it never runs —
+  // and the shelf then sits on its defaults with no clue why.
+  //
+  // So the settings are also read straight from the host's own bar config,
+  // which the service is handed directly and which no bar plugin sits in
+  // front of. That is the route that always works; the pushed one wins when
+  // it is there, since it is the same data arriving sooner.
+  property var pushedSettings: ({})
+
+  readonly property string pluginId: (shelfService.manifest && shelfService.manifest.id)
+    ? String(shelfService.manifest.id) : "samara-hub-ro.folder-shelf"
+
+  readonly property var configuredSettings: {
+    var cfg = shelfService.shell ? shelfService.shell.barConfig : null
+    if (!cfg || !cfg.layout) return ({})
+    var sections = ["left", "center", "right"]
+    for (var s = 0; s < sections.length; s++) {
+      var list = cfg.layout[sections[s]]
+      if (!Array.isArray(list)) continue
+      for (var i = 0; i < list.length; i++) {
+        var entry = list[i]
+        // A bare string is an entry with no settings on it.
+        if (!entry || typeof entry !== "object") continue
+        if (String(entry.id || "") !== shelfService.pluginId) continue
+        var out = ({})
+        for (var key in entry) if (key !== "id") out[key] = entry[key]
+        return out
+      }
+    }
+    return ({})
+  }
+
   function setting(name, fallback) {
-    var v = shelfService.settings ? shelfService.settings[name] : undefined
+    var v = shelfService.pushedSettings ? shelfService.pushedSettings[name] : undefined
+    if (v === undefined || v === null)
+      v = shelfService.configuredSettings ? shelfService.configuredSettings[name] : undefined
     return v === undefined || v === null ? fallback : v
   }
 
@@ -291,6 +327,10 @@ Item {
       scanner: shelfScanner
     }
   }
+
+  // Both halves of the plugin meet here, whichever bar is running.
+  Component.onCompleted: ShelfLink.service = shelfService
+  Component.onDestruction: if (ShelfLink.service === shelfService) ShelfLink.service = null
 
   // Lets a keybinding reach the shelf:
   //   qs -c omarchy ipc call folderShelf toggle

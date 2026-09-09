@@ -35,6 +35,21 @@ First release.
   belongs to an output rather than a workspace, so the shelf was always on all
   of them.
 
+### Fixed
+
+- Settings are read from the host's own bar configuration as well as from the
+  bar widget. The documented route is the widget, and it works under the stock
+  bar; under a third-party bar it can fail silently, leaving the shelf on its
+  defaults with nothing to explain why. The service is handed the bar config
+  directly, so that route has no bar plugin in front of it.
+- The bar icon finds its service through a shared singleton rather than only
+  through `bar.shell.serviceFor`. That lookup is scoped to whichever plugin
+  owns the bar, so under a third-party bar it runs in that bar's name instead
+  of the plugin's and returns nothing — which left the icon doing nothing at
+  all.
+- Item counts under a tile are singular when there is one of them: "1 item",
+  not "1 items".
+
 ### Security
 
 - The scanner reads `find` output as NUL-terminated records and strips control
