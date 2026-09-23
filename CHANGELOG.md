@@ -9,6 +9,22 @@ for each release.
 
 ## [Unreleased]
 
+## [1.0.1] — 2026-09-23
+
+### Security
+
+- The shelf file is no longer written through FileView. Its path is a
+  setting, and FileView resolves it like any open does, so a symlink at the
+  file or at any directory above it sent the automatic save somewhere else.
+  Saves now go through `write.py`, which walks the path from `/` with
+  no-follow directory descriptors, requires every directory on the way to
+  belong to root or to the user (and to be sticky if others can write to it),
+  requires the file's own directory to be the user's and private, and renames
+  a freshly created temporary into place relative to that checked directory.
+  The contents travel over stdin and must be valid JSON within the same
+  256 KiB limit the reader enforces. FileView is kept only as a change
+  watcher and no longer reads or writes the file.
+
 ## [1.0.0] — 2026-09-08
 
 First release.

@@ -133,6 +133,12 @@ in `~/.config/omarchy/shell.json`.
 | Bar icon | drawn mark | Any glyph your bar font carries |
 | Shelf file | `~/.config/omarchy/folder-shelf.json` | Where the folders and the position are kept |
 
+The shelf file is written atomically and never through a symbolic link: every
+directory on its path has to be a real directory owned by you or by root, and
+the one it sits in has to be yours and writable only by you. A path that fails
+that is left alone and the reason is logged, rather than the write landing
+wherever a link points.
+
 ### About very large folders
 
 Reading a folder means walking it, and a folder with a hundred thousand files in

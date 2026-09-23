@@ -94,7 +94,7 @@ Item {
     shelfService.doc = next
     shelfService.saving = true
     saveGuard.restart()
-    configFile.setText(Store.serialize(next))
+    configWriter.write(Store.serialize(next))
   }
 
   function cloneDoc() {
@@ -220,14 +220,25 @@ Item {
     recents: Math.max(0, Math.min(12, Number(shelfService.setting("recentCount", 6)) || 0))
   }
 
+  // Only a watcher: it never reads the file and never writes it. Reads go
+  // through BoundedFile and writes through GuardedWrite, because the path is
+  // a setting and FileView follows whatever a symlink there points at.
   FileView {
-    id: configFile
+    id: configWatch
     path: shelfService.configPath
+    preload: false
     watchChanges: true
-    atomicWrites: true
     printErrors: false
-    blockAllReads: true
     onFileChanged: if (!shelfService.saving) configReader.reload()
+  }
+
+  GuardedWrite {
+    id: configWriter
+    path: shelfService.configPath
+    limit: 262144
+    // The watcher sees our own rename too; keep ignoring it until the last
+    // queued write is on disk, however long the queue took.
+    onWritten: saveGuard.restart()
   }
 
   BoundedFile {
