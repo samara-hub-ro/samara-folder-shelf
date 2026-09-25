@@ -56,6 +56,7 @@ Item {
     spacing: Style.space(1)
 
     Text {
+      textFormat: Text.PlainText
       width: parent.width
       leftPadding: Style.space(8)
       bottomPadding: Style.space(4)

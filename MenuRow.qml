@@ -20,6 +20,7 @@ Rectangle {
     : "transparent"
 
   Text {
+    textFormat: Text.PlainText
     anchors.left: parent.left
     anchors.leftMargin: Style.space(9)
     anchors.verticalCenter: parent.verticalCenter
@@ -30,6 +31,7 @@ Rectangle {
   }
 
   Text {
+    textFormat: Text.PlainText
     anchors.right: parent.right
     anchors.rightMargin: Style.space(9)
     anchors.verticalCenter: parent.verticalCenter

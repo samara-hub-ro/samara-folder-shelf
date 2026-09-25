@@ -32,6 +32,7 @@ Rectangle {
 
   Text {
     id: label
+    textFormat: Text.PlainText
     anchors.centerIn: parent
     text: button.text
     color: button.accented ? Color.accent : Color.foreground

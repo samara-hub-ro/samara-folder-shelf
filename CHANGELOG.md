@@ -9,6 +9,17 @@ for each release.
 
 ## [Unreleased]
 
+## [1.0.2] — 2026-09-25
+
+### Security
+
+- Every `Text` now renders as plain text. Folder labels, file names and
+  paths were shown with the default `Text.AutoText`, so a name that looked
+  like rich text was parsed as markup, and an `<img>` in it could make the
+  shelf load an external resource just by being displayed. `Store.clean()`
+  only strips control characters, so this is fixed at the display side
+  instead, on all thirty `Text` elements rather than only the dynamic ones.
+
 ## [1.0.1] — 2026-09-23
 
 ### Security

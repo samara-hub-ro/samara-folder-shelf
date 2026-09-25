@@ -83,6 +83,7 @@ Item {
     }
 
     Text {
+      textFormat: Text.PlainText
       visible: tile.showLabel
       width: tile.width
       horizontalAlignment: Text.AlignHCenter
@@ -95,6 +96,7 @@ Item {
     }
 
     Text {
+      textFormat: Text.PlainText
       visible: tile.showLabel && tile.scan && tile.scan.ok
       width: tile.width
       horizontalAlignment: Text.AlignHCenter
@@ -138,6 +140,7 @@ Item {
 
     Text {
       id: rowName
+      textFormat: Text.PlainText
       anchors.left: rowIcon.right
       anchors.leftMargin: Style.space(10)
       anchors.right: rowStats.left
@@ -152,6 +155,7 @@ Item {
 
     Text {
       id: rowStats
+      textFormat: Text.PlainText
       anchors.right: parent.right
       anchors.rightMargin: Style.space(12)
       anchors.verticalCenter: parent.verticalCenter

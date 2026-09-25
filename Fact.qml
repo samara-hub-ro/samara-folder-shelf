@@ -15,6 +15,7 @@ Row {
   spacing: Style.space(8)
 
   Text {
+    textFormat: Text.PlainText
     text: fact.label
     color: Qt.rgba(fact.tone.r, fact.tone.g, fact.tone.b, 0.45)
     font.family: Style.font.family
@@ -22,6 +23,7 @@ Row {
   }
 
   Text {
+    textFormat: Text.PlainText
     text: fact.value
     color: Qt.rgba(fact.tone.r, fact.tone.g, fact.tone.b, fact.dimmed ? 0.62 : 0.95)
     font.family: Style.font.family

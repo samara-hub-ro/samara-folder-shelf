@@ -279,6 +279,7 @@ Scope {
 
       Text {
         id: brand
+        textFormat: Text.PlainText
         anchors.left: parent.left
         anchors.leftMargin: Style.space(6)
         anchors.verticalCenter: parent.verticalCenter
@@ -291,6 +292,7 @@ Scope {
       }
 
       Text {
+        textFormat: Text.PlainText
         anchors.left: brand.right
         anchors.leftMargin: Style.space(8)
         anchors.verticalCenter: parent.verticalCenter
@@ -333,6 +335,7 @@ Scope {
 
           Text {
             id: searchGlyph
+            textFormat: Text.PlainText
             anchors.left: parent.left
             anchors.leftMargin: Style.space(9)
             anchors.verticalCenter: parent.verticalCenter
@@ -579,6 +582,7 @@ Scope {
         visible: host.folders.length === 0
 
         Text {
+          textFormat: Text.PlainText
           width: parent.width
           horizontalAlignment: Text.AlignHCenter
           wrapMode: Text.WordWrap
@@ -600,6 +604,7 @@ Scope {
       }
 
       Text {
+        textFormat: Text.PlainText
         anchors.centerIn: parent
         visible: host.folders.length > 0 && host.visibleFolders.length === 0
         text: "Nothing matches “" + host.filterText + "”"

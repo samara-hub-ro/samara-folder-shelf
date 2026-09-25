@@ -111,6 +111,7 @@ Item {
     spacing: Style.space(10)
 
     Text {
+      textFormat: Text.PlainText
       text: "Add a folder to the shelf"
       color: Color.menu.text
       font.family: Style.font.family
@@ -182,6 +183,7 @@ Item {
     height: Style.spacing.controlHeight
 
     Text {
+      textFormat: Text.PlainText
       anchors.left: parent.left
       anchors.right: footerButtons.left
       anchors.rightMargin: Style.space(10)
@@ -250,6 +252,7 @@ Item {
           : "transparent"
 
         Text {
+          textFormat: Text.PlainText
           anchors.left: parent.left
           anchors.leftMargin: Style.space(10)
           anchors.right: shelfMark.left
@@ -265,6 +268,7 @@ Item {
 
         Text {
           id: shelfMark
+          textFormat: Text.PlainText
           anchors.right: addHere.left
           anchors.rightMargin: Style.space(8)
           anchors.verticalCenter: parent.verticalCenter
@@ -300,6 +304,7 @@ Item {
     }
 
     Text {
+      textFormat: Text.PlainText
       anchors.centerIn: parent
       visible: !picker.loading && picker.visibleEntries.length === 0
       text: "No folders in here"

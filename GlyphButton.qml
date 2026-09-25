@@ -34,6 +34,7 @@ Rectangle {
   Behavior on color { ColorAnimation { duration: 130 } }
 
   Text {
+    textFormat: Text.PlainText
     anchors.centerIn: parent
     text: button.glyph
     color: button.active ? Color.accent : Qt.rgba(Color.foreground.r, Color.foreground.g, Color.foreground.b, 0.85)

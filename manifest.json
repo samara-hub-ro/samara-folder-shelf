@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "samara-hub-ro.folder-shelf",
   "name": "Folder Shelf",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "samara-hub-ro",
   "license": "MIT",
   "description": "A glass shelf on your desktop holding the folders you actually use: hover one to see inside it \u2014 thumbnails, recent files, size, composition and permissions \u2014 and open it in your file manager with a double click.",

@@ -58,6 +58,7 @@ Item {
       spacing: Style.space(4)
 
       Text {
+        textFormat: Text.PlainText
         width: parent.width
         text: card.title
         color: Color.tooltip.text
@@ -68,6 +69,7 @@ Item {
       }
 
       Text {
+        textFormat: Text.PlainText
         width: parent.width
         text: Format.prettyPath(card.path, card.home, 52)
         color: Qt.rgba(Color.tooltip.text.r, Color.tooltip.text.g, Color.tooltip.text.b, 0.55)
@@ -79,6 +81,7 @@ Item {
 
     // ------------------------------------------------------------- failure
     Text {
+      textFormat: Text.PlainText
       visible: card.failed
       width: parent.width
       wrapMode: Text.WordWrap
@@ -151,6 +154,7 @@ Item {
 
           Text {
             id: entryName
+            textFormat: Text.PlainText
             anchors.left: parent.left
             anchors.right: entryMeta.left
             anchors.rightMargin: Style.space(8)
@@ -166,6 +170,7 @@ Item {
 
           Text {
             id: entryMeta
+            textFormat: Text.PlainText
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             text: modelData.isDir ? Format.since(modelData.mtime)
@@ -234,6 +239,7 @@ Item {
             }
 
             Text {
+              textFormat: Text.PlainText
               anchors.verticalCenter: parent.verticalCenter
               text: Format.categoryLabel(modelData.key) + " " + Format.count(modelData.count)
               color: Qt.rgba(Color.tooltip.text.r, Color.tooltip.text.g, Color.tooltip.text.b, 0.6)
@@ -286,6 +292,7 @@ Item {
     }
 
     Text {
+      textFormat: Text.PlainText
       visible: card.ready && card.scan && card.scan.partial
       width: parent.width
       wrapMode: Text.WordWrap
@@ -297,6 +304,7 @@ Item {
     }
 
     Text {
+      textFormat: Text.PlainText
       visible: !card.scan
       width: parent.width
       text: "Reading…"

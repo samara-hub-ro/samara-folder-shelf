@@ -123,6 +123,7 @@ Item {
   // A folder that has gone away still holds its place on the shelf — you put
   // it there, and an unplugged drive is not a reason to silently drop it.
   Text {
+    textFormat: Text.PlainText
     visible: icon.missing
     anchors.centerIn: flap
     text: "?"
