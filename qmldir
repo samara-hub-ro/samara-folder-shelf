@@ -1,1 +1,18 @@
 singleton ShelfLink 1.0 ShelfLink.qml
+BarWidget 1.0 BarWidget.qml
+BoundedFile 1.0 BoundedFile.qml
+Fact 1.0 Fact.qml
+FolderIcon 1.0 FolderIcon.qml
+FolderPicker 1.0 FolderPicker.qml
+FolderTile 1.0 FolderTile.qml
+GlassPanel 1.0 GlassPanel.qml
+GlyphButton 1.0 GlyphButton.qml
+GuardedWrite 1.0 GuardedWrite.qml
+Main 1.0 Main.qml
+MenuRow 1.0 MenuRow.qml
+PickerButton 1.0 PickerButton.qml
+PreviewCard 1.0 PreviewCard.qml
+Scanner 1.0 Scanner.qml
+ShelfMark 1.0 ShelfMark.qml
+ShelfMenu 1.0 ShelfMenu.qml
+ShelfWindow 1.0 ShelfWindow.qml

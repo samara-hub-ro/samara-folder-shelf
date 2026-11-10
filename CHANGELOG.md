@@ -9,6 +9,12 @@ for each release.
 
 ## [Unreleased]
 
+## [1.0.3] — 2026-11-10
+
+### Fixed
+
+- The plugin failed to load (`ShelfMenu is not a type`) because `qmldir` registered only `ShelfLink`; every component is now listed.
+
 ## [1.0.2] — 2026-09-25
 
 ### Security
