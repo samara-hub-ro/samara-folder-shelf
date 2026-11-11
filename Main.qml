@@ -90,11 +90,57 @@ Item {
   readonly property var folders: doc.folders
   readonly property bool empty: doc.folders.length === 0
 
+  // What is known to be on disk, as opposed to what is on screen. The screen
+  // is updated first so a drag never waits on a write; when the write then
+  // fails, the failure is not silent: it is retried a few times, and if the
+  // disk still will not take it the screen goes back to what the disk has,
+  // so the shelf never shows a state that would vanish on the next login.
+  property var savedDoc: null
+  property bool saveFailed: false
+  property int saveRetries: 0
+
   function commit(next) {
     shelfService.doc = next
     shelfService.saving = true
     saveGuard.restart()
     configWriter.write(Store.serialize(next))
+  }
+
+  function saveResult(ok) {
+    saveGuard.restart()
+    // A newer write is queued behind this one; its result is the one that
+    // decides, because it carries the latest contents.
+    if (configWriter.busy) return
+    if (ok) {
+      shelfService.savedDoc = shelfService.doc
+      shelfService.saveFailed = false
+      shelfService.saveRetries = 0
+      saveRetry.stop()
+      return
+    }
+    shelfService.saveFailed = true
+    if (shelfService.saveRetries < 3) {
+      shelfService.saveRetries++
+      saveRetry.interval = 2000 * shelfService.saveRetries
+      saveRetry.restart()
+      return
+    }
+    console.warn("folder-shelf: could not save " + shelfService.configPath
+                 + "; going back to what is on disk")
+    if (shelfService.savedDoc) shelfService.doc = shelfService.savedDoc
+    shelfService.saveFailed = false
+    shelfService.saveRetries = 0
+    shelfService.saving = false
+  }
+
+  Timer {
+    id: saveRetry
+    repeat: false
+    onTriggered: {
+      shelfService.saving = true
+      saveGuard.restart()
+      configWriter.write(Store.serialize(shelfService.doc))
+    }
   }
 
   function cloneDoc() {
@@ -238,7 +284,7 @@ Item {
     limit: 262144
     // The watcher sees our own rename too; keep ignoring it until the last
     // queued write is on disk, however long the queue took.
-    onWritten: saveGuard.restart()
+    onWritten: function (ok) { shelfService.saveResult(ok) }
   }
 
   BoundedFile {
@@ -255,11 +301,13 @@ Item {
         return
       }
       shelfService.doc = Store.normalize(parsed)
+      shelfService.savedDoc = shelfService.doc
       shelfService.documentLoaded = true
       shelfService.ensureSeeded()
       shelfService.refreshAll()
     }
     onFailed: function (reason) {
+      if (!shelfService.savedDoc) shelfService.savedDoc = Store.normalize(null)
       shelfService.documentLoaded = true
       if (reason === "missing") shelfService.ensureSeeded()
     }

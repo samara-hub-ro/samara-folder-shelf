@@ -38,7 +38,12 @@ Item {
     return decodeURIComponent(url.replace(/^file:\/\//, ""))
   }
 
-  readonly property bool busy: proc.running || hasPending
+  readonly property bool busy: inFlight || hasPending
+
+  // A write is in flight from the moment the helper is asked for until it
+  // exits or the guard gives up on it. Quickshell reports no event for a
+  // launch that fails outright, so `exited` alone cannot be the only way out.
+  property bool inFlight: false
 
   property bool hasPending: false
   property string pendingText: ""
@@ -49,7 +54,19 @@ Item {
     writer.pendingText = String(text)
     writer.pendingPath = String(writer.path || "")
     writer.hasPending = true
-    if (!proc.running) writer.startNext()
+    if (!writer.inFlight) writer.startNext()
+  }
+
+  // Ends the write in flight exactly once, whichever of the exit, the guard
+  // or a failed start gets there first.
+  function finish(ok) {
+    if (!writer.inFlight) return
+    writer.inFlight = false
+    guard.stop()
+    proc.stdinEnabled = true
+    writer.written(ok)
+    // Not from inside this process's own handler.
+    Qt.callLater(writer.startNext)
   }
 
   function startNext() {
@@ -57,6 +74,7 @@ Item {
     writer.hasPending = false
     if (writer.pendingPath.length === 0) {
       writer.written(false)
+      Qt.callLater(writer.startNext)
       return
     }
     writer.activeText = writer.pendingText
@@ -64,7 +82,23 @@ Item {
     proc.command = [writer.timeoutBin, "-k", "1", String(writer.deadline),
                     writer.pythonBin, "-I", writer.scriptPath,
                     writer.pendingPath, String(writer.limit)]
+    writer.inFlight = true
+    guard.restart()
     proc.running = true
+  }
+
+  // The helper is under `timeout`, so it is over by deadline + 1 second; this
+  // fires only when it was never started or its exit was never reported.
+  Timer {
+    id: guard
+    interval: (writer.deadline + 3) * 1000
+    repeat: false
+    onTriggered: {
+      if (!writer.inFlight) return
+      if (writer.printErrors) console.warn("folder-shelf write: helper did not finish")
+      proc.running = false
+      writer.finish(false)
+    }
   }
 
   Process {
@@ -89,12 +123,7 @@ Item {
         if (why.length > 0 && writer.printErrors) console.warn(why)
       }
     }
-    onExited: function (exitCode) {
-      proc.stdinEnabled = true
-      writer.written(exitCode === 0)
-      // Not from inside this process's own handler.
-      Qt.callLater(writer.startNext)
-    }
+    onExited: function (exitCode) { writer.finish(exitCode === 0) }
   }
 
   Component.onDestruction: proc.running = false

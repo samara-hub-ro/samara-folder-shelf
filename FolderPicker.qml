@@ -31,13 +31,42 @@ Item {
     Qt.callLater(function () { pathField.text = picker.current; listView.forceActiveFocus() })
   }
 
+  // One listing at a time, run by listdirs.py under `timeout`: bounded in rows
+  // and in time, a single process, and stopped as one when navigation moves
+  // on or the picker goes away. A listing that has been superseded is dropped
+  // rather than shown, and one that never answers ends as an error, not as a
+  // spinner that never stops.
+  property int maxRows: 2000
+  property int listSeconds: 4
+  property int listSerial: 0
+  property bool relist: false
+  property bool failed: false
+
   function reload() {
+    picker.listSerial++
+    picker.failed = false
     picker.loading = true
-    lister.command = ["bash", "-c",
-                      'cd -- "$1" 2>/dev/null || exit 0; ' +
-                      'find . -mindepth 1 -maxdepth 1 -type d -printf "%f\\n" 2>/dev/null | LC_ALL=C sort -f',
-                      "bash", picker.current]
+    if (lister.running) {
+      picker.relist = true
+      lister.running = false
+      return
+    }
+    picker.startListing()
+  }
+
+  function startListing() {
+    picker.relist = false
+    picker.entries = []
+    lister.command = ["/usr/bin/timeout", "-k", "1", String(picker.listSeconds + 1),
+                      "/usr/bin/python3", "-I", picker.listScript,
+                      picker.current, String(picker.maxRows), String(picker.listSeconds)]
     lister.running = true
+    listGuard.restart()
+  }
+
+  readonly property string listScript: {
+    var url = String(Qt.resolvedUrl("listdirs.py"))
+    return decodeURIComponent(url.replace(/^file:\/\//, ""))
   }
 
   function navigate(path) {
@@ -59,17 +88,43 @@ Item {
 
   Process {
     id: lister
-    environment: ({ "LC_ALL": "C" })
+    environment: ({ "LC_ALL": "C.UTF-8" })
+    workingDirectory: "/"
+    property int serial: 0
     stdout: StdioCollector {
       id: listerOut
       waitForEnd: true
       onStreamFinished: {
-        picker.entries = String(listerOut.text || "").split("\n").filter(function (l) { return l.length > 0 })
+        listGuard.stop()
+        if (picker.relist) return
+        picker.entries = String(listerOut.text || "").split("\0").filter(function (l) { return l.length > 0 })
         picker.loading = false
         listView.currentIndex = -1
       }
     }
+    onExited: {
+      if (picker.relist) Qt.callLater(picker.startListing)
+    }
   }
+
+  // No stream at all means the helper never started or never ended; there is
+  // no event for that, so this is the one that says so.
+  Timer {
+    id: listGuard
+    interval: (picker.listSeconds + 3) * 1000
+    repeat: false
+    onTriggered: {
+      lister.running = false
+      picker.relist = false
+      picker.entries = []
+      picker.failed = true
+      picker.loading = false
+    }
+  }
+
+  Component.onDestruction: lister.running = false
+
+  BoundedPaste { id: paster; maxBytes: 4096 }
 
   implicitWidth: Style.space(420)
   implicitHeight: Style.space(380)
@@ -143,11 +198,21 @@ Item {
         selectByMouse: true
         selectionColor: Qt.rgba(Color.accent.r, Color.accent.g, Color.accent.b, 0.4)
         clip: true
+        maximumLength: 4096
+        Keys.onPressed: function (event) { paster.handle(event, pathField) }
         onAccepted: {
           var typed = String(text || "").trim().replace(/^~(?=\/|$)/, picker.home)
           if (typed.length > 0) picker.navigate(typed)
         }
         Keys.onEscapePressed: picker.cancelled()
+      }
+
+      // Middle-click would paste the primary selection through Qt's own
+      // unbounded read; take the click, leave every other button alone.
+      MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.MiddleButton
+        onPressed: function (event) { event.accepted = true }
       }
     }
 
@@ -307,7 +372,7 @@ Item {
       textFormat: Text.PlainText
       anchors.centerIn: parent
       visible: !picker.loading && picker.visibleEntries.length === 0
-      text: "No folders in here"
+      text: picker.failed ? "Could not read this folder" : "No folders in here"
       color: Qt.rgba(Color.menu.text.r, Color.menu.text.g, Color.menu.text.b, 0.4)
       font.family: Style.font.family
       font.pixelSize: Style.font.bodySmall

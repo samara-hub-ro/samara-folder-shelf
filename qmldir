@@ -1,6 +1,7 @@
 singleton ShelfLink 1.0 ShelfLink.qml
 BarWidget 1.0 BarWidget.qml
 BoundedFile 1.0 BoundedFile.qml
+BoundedPaste 1.0 BoundedPaste.qml
 Fact 1.0 Fact.qml
 FolderIcon 1.0 FolderIcon.qml
 FolderPicker 1.0 FolderPicker.qml

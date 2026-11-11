@@ -21,6 +21,8 @@ Item {
 
   property bool renaming: false
 
+  BoundedPaste { id: paster; maxBytes: 512 }
+
   function beginRename() {
     menu.renaming = true
     renameField.text = menu.folder ? (menu.folder.label || Format.baseName(menu.folder.path)) : ""
@@ -88,8 +90,16 @@ Item {
         selectByMouse: true
         selectionColor: Qt.rgba(Color.accent.r, Color.accent.g, Color.accent.b, 0.4)
         clip: true
+        maximumLength: 120
+        Keys.onPressed: function (event) { paster.handle(event, renameField) }
         onAccepted: menu.renamed(String(text || "").trim())
         Keys.onEscapePressed: menu.renaming = false
+      }
+
+      MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.MiddleButton
+        onPressed: function (event) { event.accepted = true }
       }
     }
 

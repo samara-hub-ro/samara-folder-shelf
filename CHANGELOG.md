@@ -9,6 +9,41 @@ for each release.
 
 ## [Unreleased]
 
+## [1.0.4] — 2026-11-11
+
+Addresses the review of 1.0.3 (marketplace issue #14586).
+
+### Security
+
+- Thumbnails are vetted before the shell decodes them. `thumbcheck.py` opens
+  each candidate without following links, requires a regular file of at most
+  8 MiB whose leading bytes match its extension (png, jpg, gif, webp), and for
+  PNG walks the chunk list with bounded reads: no `zTXt`/`iTXt`, a few small
+  `tEXt`, one `iCCP` of bounded size, a bounded chunk count and pixel area, and
+  a closing `IEND`. Anything else is not drawn. SVG, AVIF, HEIC, BMP, TIFF and
+  ICO are no longer used as thumbnails.
+- Pasting no longer goes through Qt's synchronous, unbounded clipboard read.
+  Ctrl+V and Shift+Insert in the picker, search and rename fields, and
+  middle-click primary-selection paste, are replaced by `paste.py`: capped at a
+  few KiB and two seconds, in its own process group, delivered only to the
+  field and request that asked and only while it still has focus. The fields
+  also have a maximum length.
+
+### Fixed
+
+- The folder picker lists folders with `listdirs.py` under `timeout` (at most
+  2000 rows, 4 seconds, one process) instead of an unowned bash/find/sort
+  pipeline into an unbounded collector. A newer navigation stops the previous
+  listing and a superseded answer is dropped; a listing that never answers
+  shows an error instead of loading forever. Folder names with control
+  characters are skipped rather than split into several entries.
+- Scans run under `timeout`, which owns the process group, so the deadline now
+  covers every phase and stopping a scan reaches every `find`, `sort` and `awk`
+  in it. Queued requests and cached results are capped.
+- A failed save is no longer ignored. The write helper reports a launch that
+  never started or never exited as a failure, the shelf retries, and if the disk
+  still refuses it goes back to the last state that was saved.
+
 ## [1.0.3] — 2026-11-10
 
 ### Fixed

@@ -5,6 +5,10 @@
 # prints an ERR record and exits 0, because a missing folder is a state the
 # shelf draws, not an error it reports.
 #
+# The caller runs this under `timeout`, which owns the whole process group:
+# every phase below, pipelines included, ends together at the overall deadline
+# or when the caller stops it.
+#
 #   usage: bash scan.sh <path> <deep:0|1> <timeout-seconds> <thumbnails> <recents>
 #
 # Records:
@@ -13,7 +17,8 @@
 #   RECENT  <mtime>  <type>  <size>  <name>  most recently changed entries
 #   DEEP    <files>  <dirs>  <bytes>         totals for the walk that was run
 #   CAT     <key>    <count> <bytes>         one per file category present
-#   THUMB   <path>                           an image to draw in the preview
+#   THUMB   <path>                           an image to draw in the preview, which
+#                                            thumbcheck.py has looked inside
 #   PARTIAL 1                                the walk hit the timeout
 #   ERR     <reason>
 #
@@ -37,6 +42,18 @@ deep=${2:-1}
 timeout_s=${3:-12}
 thumbs=${4:-4}
 recents=${5:-6}
+here=$(cd -- "$(dirname -- "$0")" 2>/dev/null && pwd)
+
+# Candidate images go through thumbcheck.py, which keeps only files that are
+# safe to hand to Qt's decoders inside the shell. Without it there are no
+# thumbnails at all, and the rest of the card is unaffected.
+filter_thumbs() {
+  if [ "$thumbs" -gt 0 ] && [ -x /usr/bin/python3 ] && [ -r "$here/thumbcheck.py" ]; then
+    /usr/bin/python3 -I "$here/thumbcheck.py" "$thumbs"
+  else
+    grep -a -v '^CAND'
+  fi
+}
 
 [ -n "$path" ] || { printf 'ERR\tno-path\n'; exit 0; }
 if [ ! -d "$path" ]; then
@@ -101,9 +118,11 @@ NF >= 3 {
   size[cat] += $2
   # A path with a control character in it cannot be written on a line and
   # still be opened from one, so it is simply not offered as a thumbnail.
-  if (cat == "image" && shown < want && path !~ /[[:cntrl:]]/) {
+  # Only candidates: thumbcheck.py looks inside each one before it becomes a
+  # THUMB, so more are offered than will be used.
+  if (cat == "image" && shown < want * 8 && path !~ /[[:cntrl:]]/) {
     shown++
-    printf "THUMB\t%s\n", path
+    printf "CAND\t%s\n", path
   }
 }
 END {
@@ -120,11 +139,11 @@ if [ "$deep" = "1" ]; then
     # A killed `find` leaves its last record unterminated, so the marker opens
     # with a NUL of its own or it lands glued to that truncated record.
     [ "$?" = "124" ] && printf '\0PARTIAL'
-  } | awk -v want="$thumbs" "$AWK_CLASSIFY"
+  } | awk -v want="$thumbs" "$AWK_CLASSIFY" | filter_thumbs
 else
   find -H "$path" -mindepth 1 -maxdepth 1 \( -type f -o -type d \) \
     -printf '%y\t%s\t%p\0' 2>/dev/null |
-    awk -v want="$thumbs" "$AWK_CLASSIFY"
+    awk -v want="$thumbs" "$AWK_CLASSIFY" | filter_thumbs
 fi
 
 exit 0

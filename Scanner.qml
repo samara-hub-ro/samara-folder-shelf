@@ -32,6 +32,10 @@ Item {
   property var pending: []
   property string active: ""
 
+  // Limits on what the scanner keeps: stacked requests and cached results.
+  property int maxPending: 64
+  property int maxResults: 128
+
   function fresh(path) {
     var r = scanner.results[path]
     if (!r) return false
@@ -56,6 +60,9 @@ Item {
     }
     if (urgent) scanner.pending.unshift(p)
     else scanner.pending.push(p)
+    // Urgent requests are at the front, so what falls off is the oldest
+    // background refresh.
+    while (scanner.pending.length > scanner.maxPending) scanner.pending.pop()
     scanner.pump()
   }
 
@@ -77,7 +84,12 @@ Item {
     if (scanner.active || scanner.pending.length === 0) return
     var p = scanner.pending.shift()
     scanner.active = p
-    proc.command = ["bash", scanner.scriptPath, p,
+    // `timeout` puts the scan in a process group of its own and signals the
+    // group, so the deadline and a stop both reach every find, sort and awk in
+    // the pipelines and not only the bash that started them. The deadline
+    // covers every phase, not just the recursive walk.
+    proc.command = ["timeout", "-k", "1", String(scanner.timeoutSeconds + 4),
+                    "bash", scanner.scriptPath, p,
                     scanner.deep ? "1" : "0",
                     String(scanner.timeoutSeconds),
                     String(scanner.thumbnails),
@@ -157,6 +169,12 @@ Item {
     var next = ({})
     for (var k in scanner.results) next[k] = scanner.results[k]
     next[path] = scanner.parse(path, text)
+    var keys = Object.keys(next)
+    if (keys.length > scanner.maxResults) {
+      keys.sort(function (a, b) { return next[a].at - next[b].at })
+      for (var d = 0; d < keys.length - scanner.maxResults; d++)
+        if (keys[d] !== path) delete next[keys[d]]
+    }
     scanner.results = next
     scanner.revision++
     scanner.scanned(path)

@@ -359,12 +359,25 @@ Scope {
             selectByMouse: true
             selectionColor: Qt.rgba(Color.accent.r, Color.accent.g, Color.accent.b, 0.4)
             clip: true
+            maximumLength: 200
             onTextChanged: host.filterText = text
+            Keys.onPressed: function (event) { searchPaster.handle(event, searchInput) }
             Keys.onEscapePressed: {
               searchInput.text = ""
               searchBox.expanded = false
               searchInput.focus = false
             }
+          }
+
+          BoundedPaste { id: searchPaster; maxBytes: 512 }
+
+          // Middle-click would paste the primary selection through Qt's own
+          // unbounded clipboard read; take that button and no other.
+          MouseArea {
+            anchors.fill: searchInput
+            visible: searchBox.expanded
+            acceptedButtons: Qt.MiddleButton
+            onPressed: function (event) { event.accepted = true }
           }
 
           MouseArea {
