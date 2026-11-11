@@ -360,6 +360,9 @@ Scope {
             selectionColor: Qt.rgba(Color.accent.r, Color.accent.g, Color.accent.b, 0.4)
             clip: true
             maximumLength: 200
+            // Never writable to Qt: see Edit.js.
+            readOnly: true
+            cursorVisible: activeFocus
             onTextChanged: host.filterText = text
             Keys.onPressed: function (event) { searchPaster.handle(event, searchInput) }
             Keys.onEscapePressed: {

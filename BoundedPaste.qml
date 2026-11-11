@@ -1,12 +1,13 @@
 import QtQuick
 import Quickshell.Io
+import "Edit.js" as Edit
 
 // Paste into a TextInput without Qt's own clipboard read.
 //
 // TextInput's native paste reads the whole clipboard synchronously on the
 // shell's thread, with no limit on size or time, so whoever is serving the
-// clipboard can stall the desktop. `handle(event, field)` takes Ctrl+V and
-// Shift+Insert away from a field (a MouseArea over it takes the middle-click
+// clipboard can stall the desktop. `handle(event, field)` does the
+// editing of a read-only field, paste included (a MouseArea over it takes the middle-click
 // primary-selection paste) and `paste.py` does the read instead: capped in bytes, capped in time, in its own
 // process group, asynchronous to the shell.
 //
@@ -59,24 +60,14 @@ Item {
     paster.target = null
     if (!field || paster.targetSerial !== paster.serial) return
     if (!field.activeFocus || text.length === 0) return
-    var room = Math.min(paster.maxBytes, field.maximumLength - field.length)
-    if (field.selectionStart !== field.selectionEnd)
-      room += field.selectionEnd - field.selectionStart
-    if (room <= 0) return
-    if (field.selectionStart !== field.selectionEnd)
-      field.remove(field.selectionStart, field.selectionEnd)
-    field.insert(field.cursorPosition, text.slice(0, room))
+    Edit.replaceSelection(field, text.slice(0, paster.maxBytes))
   }
 
-  // Call from a field's Keys.onPressed. True when the key was a paste and
-  // has been taken, in which case the field must not see it.
+  // Call from a field's Keys.onPressed. The field is `readOnly`, so this is
+  // where typing, deleting, cutting and pasting happen (see Edit.js); true
+  // when the key was one of those and has been taken.
   function handle(event, field) {
-    var shiftInsert = event.key === Qt.Key_Insert && (event.modifiers & Qt.ShiftModifier)
-    var ctrlV = event.key === Qt.Key_V && (event.modifiers & Qt.ControlModifier)
-    if (!(shiftInsert || ctrlV || event.matches(StandardKey.Paste))) return false
-    event.accepted = true
-    paster.request(field)
-    return true
+    return Edit.apply(event, field, function () { paster.request(field) })
   }
 
   Process {

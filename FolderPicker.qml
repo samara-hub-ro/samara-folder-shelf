@@ -199,6 +199,9 @@ Item {
         selectionColor: Qt.rgba(Color.accent.r, Color.accent.g, Color.accent.b, 0.4)
         clip: true
         maximumLength: 4096
+        // Never writable to Qt: see Edit.js.
+        readOnly: true
+        cursorVisible: activeFocus
         Keys.onPressed: function (event) { paster.handle(event, pathField) }
         onAccepted: {
           var typed = String(text || "").trim().replace(/^~(?=\/|$)/, picker.home)

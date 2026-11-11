@@ -91,6 +91,9 @@ Item {
         selectionColor: Qt.rgba(Color.accent.r, Color.accent.g, Color.accent.b, 0.4)
         clip: true
         maximumLength: 120
+        // Never writable to Qt: see Edit.js.
+        readOnly: true
+        cursorVisible: activeFocus
         Keys.onPressed: function (event) { paster.handle(event, renameField) }
         onAccepted: menu.renamed(String(text || "").trim())
         Keys.onEscapePressed: menu.renaming = false

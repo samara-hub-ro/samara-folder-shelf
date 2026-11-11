@@ -9,6 +9,32 @@ for each release.
 
 ## [Unreleased]
 
+## [1.0.5] — 2026-11-11
+
+Addresses the second review of the update (marketplace issue #14681).
+
+### Security
+
+- The text fields (picker path, search, rename) are now permanently `readOnly`
+  to Qt. A writable `TextInput` asks the clipboard whether it can paste every
+  time the clipboard changes, and on affected Qt builds that read is
+  synchronous and unbounded, with no key press involved. Typing, deleting,
+  cutting, Enter and paste are handled in `Edit.js` by setting the field's text
+  directly; cursor movement, selection, mouse selection and copy stay native.
+- Thumbnails are now shown from a private snapshot. `thumbcheck.py` reads each
+  candidate once from the descriptor it opened, validates those bytes, and
+  writes them to a 0700 directory under `$XDG_RUNTIME_DIR`; the shelf draws the
+  snapshot, so replacing the original afterwards (with a FIFO, a symlink or
+  another image) cannot change what Qt opens. The directory is pruned to the
+  newest 300 files and one day.
+
+### Fixed
+
+- Cancelling a paste (a second request, the guard timer, teardown) now ends
+  the clipboard subprocess. `paste.py` takes the whole `wl-paste` group down on
+  SIGTERM, and `wl-paste` itself runs under its own `timeout`, so it is also
+  reaped if the helper is killed outright.
+
 ## [1.0.4] — 2026-11-11
 
 Addresses the review of 1.0.3 (marketplace issue #14586).
